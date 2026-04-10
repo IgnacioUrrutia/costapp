@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CostApp</string>
+    <string name="title_activity_main">CostApp</string>
+    <string name="package_name">com.costapp.app</string>
+    <string name="custom_url_scheme">com.costapp.app</string>
+    <string name="default_web_client_id">1082316027619-f2rjigcscd1afau0nh14k3s9sn6tr6hg.apps.googleusercontent.com</string>
+    <string name="google_app_id">1:1082316027619:android:e6207164580737aff477d6</string>
+</resources>

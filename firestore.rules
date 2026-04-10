@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Match any document in the 'expenses' collection
+    match /expenses/{expenseId} {
+      // Allow read/write only if the user is authenticated and is the owner of the document
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Allow create only if the user is authenticated and sets themselves as the owner
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Match any document in the 'users' collection (if we decide to store profile data)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
