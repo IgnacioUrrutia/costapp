@@ -1,20 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, User, Search, Menu, Sun, Moon, HelpCircle, X, LogOut, Settings, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useExpenses } from '../../context/ExpenseContext';
+import { useMode, MODES } from '../../context/ModeContext';
 
 const Navbar = ({ collapsed, toggleMobileMenu, onOpenTutorial }) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { budgets, salary } = useExpenses();
+  const { budgets, salary, expenses } = useExpenses();
+  const { mode, switchMode } = useMode();
   const [showNotifs, setShowNotifs] = useState(false);
   const [showUser, setShowUser] = useState(false);
 
+  // Unusual spending detection
+  const unusualSpending = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const todayTotal = expenses
+      .filter(e => e.date === todayStr)
+      .reduce((s, e) => s + (e.amount || 0), 0);
+    if (todayTotal === 0) return null;
+    const sameWeekdayTotals = [];
+    for (let w = 1; w <= 4; w++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - w * 7);
+      const dStr = d.toISOString().split('T')[0];
+      const t = expenses.filter(e => e.date === dStr).reduce((s, e) => s + (e.amount || 0), 0);
+      if (t > 0) sameWeekdayTotals.push(t);
+    }
+    if (sameWeekdayTotals.length < 2) return null;
+    const avg = sameWeekdayTotals.reduce((a, b) => a + b, 0) / sameWeekdayTotals.length;
+    if (avg > 0 && todayTotal > avg * 3) {
+      return { multiplier: Math.round(todayTotal / avg) };
+    }
+    return null;
+  }, [expenses]);
+
   // Build contextual notifications
   const notifs = [];
+  if (unusualSpending) {
+    notifs.push({ id: 'unusual', icon: '⚠️', title: 'Gasto inusual hoy', desc: `Gastaste ${unusualSpending.multiplier}x más que tu promedio en este día de la semana`, to: '/movimientos' });
+  }
   if (!salary || salary === 0) {
     notifs.push({ id: 'salary', icon: '💰', title: 'Configura tu sueldo', desc: 'Para ver cuánto te queda disponible', to: '/config' });
   }
@@ -46,14 +75,33 @@ const Navbar = ({ collapsed, toggleMobileMenu, onOpenTutorial }) => {
           <Menu size={22} strokeWidth={2.5} />
         </motion.button>
 
-        <div className="hidden sm:flex items-center gap-3 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 px-4 py-2.5 rounded-2xl w-full max-w-xs focus-within:ring-4 focus-within:ring-indigo-500/10 focus-within:border-indigo-500/30 transition-all group">
-          <Search size={17} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors shrink-0" />
-          <input
-            type="text"
-            placeholder="Buscar..."
-            className="bg-transparent border-none outline-none text-sm w-full text-slate-600 dark:text-slate-300 font-semibold placeholder:text-slate-400"
-          />
+        {/* Mode switcher */}
+        <div className="hidden sm:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 rounded-xl p-1 border border-slate-200/50 dark:border-slate-800/50 shrink-0">
+          {MODES.map(m => (
+            <button
+              key={m.key}
+              onClick={() => switchMode(m.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
+                mode === m.key
+                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
         </div>
+
+        <button
+          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
+          className="hidden sm:flex items-center gap-3 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 px-4 py-2.5 rounded-2xl w-full max-w-xs hover:border-indigo-500/30 hover:ring-4 hover:ring-indigo-500/10 transition-all group text-left"
+        >
+          <Search size={17} className="text-slate-400 group-hover:text-indigo-500 transition-colors shrink-0" />
+          <span className="text-sm font-semibold text-slate-400 flex-1">Buscar...</span>
+          <kbd className="text-[9px] font-black text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+            Ctrl K
+          </kbd>
+        </button>
       </div>
 
       {/* Right */}

@@ -55,6 +55,10 @@ export const ExpenseProvider = ({ children }) => {
   // ── Tarjetas de crédito ────────────────────────────────────────────────────
   const [creditCards, setCreditCards] = useState([]);
 
+  // ── Gastos compartidos (Pareja / Familia) ──────────────────────────────────
+  const [splitPersons, setSplitPersons] = useState([]);
+  const [splitExpenses, setSplitExpenses] = useState([]);
+
   // ── Alertas ya disparadas (evitar repetición) ─────────────────────────────
   const alertedRef = useRef(new Set());
 
@@ -114,6 +118,8 @@ export const ExpenseProvider = ({ children }) => {
           setDebts(d.debts || []);
           setGoals(d.goals || []);
           setCreditCards(d.creditCards || []);
+          setSplitPersons(d.splitPersons || []);
+          setSplitExpenses(d.splitExpenses || []);
           setDebitBalanceState(d.debitBalance || 0);
           setCurrencyState(d.currency || 'CLP');
           setExchangeRateState(d.exchangeRate || 900);
@@ -488,6 +494,51 @@ export const ExpenseProvider = ({ children }) => {
     toast.success('¡Contribución registrada!');
   };
 
+  // ── Gastos compartidos CRUD ───────────────────────────────────────────────
+  const addSplitPerson = async (person) => {
+    const newList = [...splitPersons, { ...person, id: Date.now().toString() }];
+    setSplitPersons(newList);
+    await saveField('splitPersons', newList);
+  };
+
+  const deleteSplitPerson = async (id) => {
+    const newList = splitPersons.filter(p => p.id !== id);
+    setSplitPersons(newList);
+    await saveField('splitPersons', newList);
+  };
+
+  const addSplitExpense = async (expense) => {
+    const newList = [...splitExpenses, { ...expense, id: Date.now().toString(), settled: false }];
+    setSplitExpenses(newList);
+    await saveField('splitExpenses', newList);
+    toast.success('Gasto compartido registrado');
+  };
+
+  const deleteSplitExpense = async (id) => {
+    const newList = splitExpenses.filter(e => e.id !== id);
+    setSplitExpenses(newList);
+    await saveField('splitExpenses', newList);
+  };
+
+  const settleSplitExpense = async (id) => {
+    const newList = splitExpenses.map(e => e.id === id ? { ...e, settled: true } : e);
+    setSplitExpenses(newList);
+    await saveField('splitExpenses', newList);
+    toast.success('Gasto liquidado');
+  };
+
+  const settleAllWithPerson = async (personId) => {
+    const newList = splitExpenses.map(e => {
+      const involves = e.paidById === personId ||
+        e.paidById === 'me' ||
+        (e.participants || []).some(p => p.personId === personId || p.personId === 'me');
+      return (involves && !e.settled) ? { ...e, settled: true } : e;
+    });
+    setSplitExpenses(newList);
+    await saveField('splitExpenses', newList);
+    toast.success('Deudas liquidadas');
+  };
+
   // ── Filtros y derivados ───────────────────────────────────────────────────
   const filteredExpenses = useMemo(() => {
     return expenses.filter((exp) => {
@@ -779,6 +830,8 @@ export const ExpenseProvider = ({ children }) => {
       upcomingDueDebt, financialHealth, weeklySpendingData,
       financialScore, balanceProjection,
       shareMonth,
+      splitPersons, addSplitPerson, deleteSplitPerson,
+      splitExpenses, addSplitExpense, deleteSplitExpense, settleSplitExpense, settleAllWithPerson,
     }}>
       {children}
     </ExpenseContext.Provider>

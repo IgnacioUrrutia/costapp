@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ExpenseProvider } from './context/ExpenseContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ModeProvider } from './context/ModeContext';
 import MainLayout from './components/Layout/MainLayout';
 
 // Eager — críticos para la primera carga
@@ -23,7 +24,11 @@ const Calendario     = lazy(() => import('./pages/Calendario'));
 const ResumenAnual   = lazy(() => import('./pages/ResumenAnual'));
 const ImportarDatos  = lazy(() => import('./pages/ImportarDatos'));
 const ImportarArchivo = lazy(() => import('./pages/ImportarArchivo'));
-const PublicReport   = lazy(() => import('./pages/PublicReport'));
+const PublicReport    = lazy(() => import('./pages/PublicReport'));
+const Presupuesto     = lazy(() => import('./pages/Presupuesto'));
+const Proyeccion      = lazy(() => import('./pages/Proyeccion'));
+const Logros          = lazy(() => import('./pages/Logros'));
+const Familia         = lazy(() => import('./pages/Familia'));
 
 const PageLoader = () => (
   <div className="flex-1 flex items-center justify-center min-h-[60vh]">
@@ -64,6 +69,10 @@ const AppRoutes = () => {
           <Route path="calendario"       element={<Calendario />} />
           <Route path="anual"            element={<ResumenAnual />} />
           <Route path="config"           element={<Configuracion />} />
+          <Route path="presupuesto"      element={<Presupuesto />} />
+          <Route path="proyeccion"       element={<Proyeccion />} />
+          <Route path="logros"           element={<Logros />} />
+          <Route path="familia"          element={<Familia />} />
           <Route path="importar"         element={<ImportarDatos />} />
           <Route path="importar-archivo" element={<ImportarArchivo />} />
         </Route>
@@ -78,6 +87,7 @@ const AppRoutes = () => {
 function App() {
   return (
     <ThemeProvider>
+      <ModeProvider>
       <AuthProvider>
         <ExpenseProvider>
           <Toaster
@@ -98,6 +108,7 @@ function App() {
           </Router>
         </ExpenseProvider>
       </AuthProvider>
+      </ModeProvider>
     </ThemeProvider>
   );
 }

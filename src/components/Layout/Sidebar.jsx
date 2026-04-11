@@ -3,6 +3,7 @@ import {
   LayoutDashboard, PlusCircle, Table, Settings, LogOut,
   ChevronLeft, ChevronRight, X, Wallet, RefreshCw,
   CreditCard, Target, CalendarDays, BarChart2, TrendingUp,
+  PieChart, LineChart, Trophy, Users,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,22 +29,26 @@ const NAV_SECTIONS = [
   {
     label: 'Finanzas',
     items: [
-      { icon: CreditCard, label: 'Deudas', path: '/deudas' },
-      { icon: Wallet, label: 'Tarjetas', path: '/tarjetas' },
-      { icon: Target, label: 'Metas', path: '/metas' },
+      { icon: PieChart,   label: 'Presupuesto',  path: '/presupuesto' },
+      { icon: CreditCard, label: 'Deudas',        path: '/deudas' },
+      { icon: Wallet,     label: 'Tarjetas',      path: '/tarjetas' },
+      { icon: Target,     label: 'Metas',         path: '/metas' },
+      { icon: Users,      label: 'Familia',       path: '/familia' },
     ],
   },
   {
     label: 'Reportes',
     items: [
-      { icon: CalendarDays, label: 'Calendario', path: '/calendario' },
-      { icon: BarChart2, label: 'Resumen Anual', path: '/anual' },
+      { icon: LineChart,   label: 'Proyección',    path: '/proyeccion' },
+      { icon: CalendarDays, label: 'Calendario',   path: '/calendario' },
+      { icon: BarChart2,   label: 'Resumen Anual', path: '/anual' },
     ],
   },
   {
     label: 'Cuenta',
     items: [
       { icon: Settings, label: 'Configuración', path: '/config' },
+      { icon: Trophy,   label: 'Logros',        path: '/logros' },
     ],
   },
 ];
@@ -60,7 +65,7 @@ const SidebarItem = ({ icon: Icon, label, path, active, collapsed, onClick }) =>
     {active && (
       <motion.div
         layoutId="activeNav"
-        className="absolute inset-0 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-600/20 -z-10"
+        className="absolute inset-0 nav-active-bg rounded-xl -z-10"
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       />
     )}
@@ -156,7 +161,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, isMobileOpen, setIsMobileOpen })
     <>
       {/* Desktop */}
       <aside
-        className={`hidden lg:flex flex-col fixed top-0 left-0 h-screen bg-slate-900 border-r border-slate-800/50 z-[50] shadow-2xl transition-all duration-300 ${collapsed ? 'w-[72px]' : 'w-64'}`}
+        className={`hidden lg:flex flex-col fixed top-0 left-0 h-screen sidebar-themed border-r z-[50] shadow-2xl transition-all duration-300 ${collapsed ? 'w-[72px]' : 'w-64'}`}
       >
         {sidebarContent}
       </aside>
@@ -169,7 +174,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, isMobileOpen, setIsMobileOpen })
             animate={{ x: 0 }}
             exit={{ x: -280 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="lg:hidden fixed top-0 left-0 h-screen w-64 bg-slate-900 border-r border-slate-800/50 z-[50] shadow-2xl flex flex-col"
+            className="lg:hidden fixed top-0 left-0 h-screen w-64 sidebar-themed border-r z-[50] shadow-2xl flex flex-col"
           >
             {sidebarContent}
           </motion.aside>
