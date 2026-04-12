@@ -58,17 +58,22 @@ const SidebarItem = ({ icon: Icon, label, path, active, collapsed, onClick }) =>
     to={path}
     onClick={onClick}
     title={collapsed ? label : undefined}
-    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group ${
+    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group touch-manipulation ${
       active ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
     }`}
   >
-    {active && (
-      <motion.div
-        layoutId="activeNav"
-        className="absolute inset-0 nav-active-bg rounded-xl -z-10"
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      />
-    )}
+    <AnimatePresence>
+      {active && (
+        <motion.div
+          key="active-indicator"
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.92 }}
+          transition={{ duration: 0.15 }}
+          className="absolute inset-0 nav-active-bg rounded-xl -z-10"
+        />
+      )}
+    </AnimatePresence>
     <Icon size={20} className={`shrink-0 ${active ? 'scale-110' : 'group-hover:scale-110'} transition-transform duration-200`} />
     {!collapsed && (
       <span className="font-bold text-sm tracking-tight whitespace-nowrap">{label}</span>
@@ -111,7 +116,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, isMobileOpen, setIsMobileOpen })
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
           <button
-            onPointerDown={() => setIsMobileOpen(false)}
+            onClick={() => setIsMobileOpen(false)}
             className="lg:hidden p-3 rounded-lg bg-slate-800/50 text-slate-400 active:text-rose-500 transition-all border border-white/5 touch-manipulation"
           >
             <X size={18} strokeWidth={3} />
@@ -189,6 +194,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, isMobileOpen, setIsMobileOpen })
             exit={{ x: -280 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="lg:hidden fixed top-0 left-0 h-screen w-64 sidebar-themed border-r z-[49] shadow-2xl flex flex-col"
+            onPointerDown={e => e.stopPropagation()}
           >
             {sidebarContent}
           </motion.aside>
