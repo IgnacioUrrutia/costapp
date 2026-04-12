@@ -148,16 +148,20 @@ const Navbar = ({ collapsed, toggleMobileMenu, onOpenTutorial }) => {
           <AnimatePresence>
             {showNotifs && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowNotifs(false)} />
+                <div className="fixed inset-0 z-40" onPointerDown={() => setShowNotifs(false)} />
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95, y: 8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 8 }}
                   className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden"
+                  onPointerDown={e => e.stopPropagation()}
                 >
                   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                     <p className="text-xs font-black uppercase tracking-widest text-slate-500">Notificaciones</p>
-                    <button onClick={() => setShowNotifs(false)} className="text-slate-400 hover:text-slate-600">
+                    <button
+                      onPointerDown={() => setShowNotifs(false)}
+                      className="p-1.5 text-slate-400 active:text-slate-600 touch-manipulation rounded-lg"
+                    >
                       <X size={14} />
                     </button>
                   </div>
@@ -224,12 +228,13 @@ const Navbar = ({ collapsed, toggleMobileMenu, onOpenTutorial }) => {
           <AnimatePresence>
             {showUser && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowUser(false)} />
+                <div className="fixed inset-0 z-40" onPointerDown={() => setShowUser(false)} />
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95, y: 8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 8 }}
                   className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden"
+                  onPointerDown={e => e.stopPropagation()}
                 >
                   {/* User info */}
                   <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
