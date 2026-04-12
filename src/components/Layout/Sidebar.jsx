@@ -111,8 +111,8 @@ const Sidebar = ({ collapsed, onToggleCollapse, isMobileOpen, setIsMobileOpen })
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
           <button
-            onClick={() => setIsMobileOpen(false)}
-            className="lg:hidden p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-rose-500 transition-all border border-white/5"
+            onPointerDown={() => setIsMobileOpen(false)}
+            className="lg:hidden p-3 rounded-lg bg-slate-800/50 text-slate-400 active:text-rose-500 transition-all border border-white/5 touch-manipulation"
           >
             <X size={18} strokeWidth={3} />
           </button>
@@ -166,15 +166,29 @@ const Sidebar = ({ collapsed, onToggleCollapse, isMobileOpen, setIsMobileOpen })
         {sidebarContent}
       </aside>
 
-      {/* Mobile overlay */}
+      {/* Mobile — backdrop y panel separados para evitar que el backdrop capture eventos del botón X */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div
+            key="mobile-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[48]"
+            onPointerDown={() => setIsMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {isMobileOpen && (
           <motion.aside
+            key="mobile-sidebar"
             initial={{ x: -280 }}
             animate={{ x: 0 }}
             exit={{ x: -280 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="lg:hidden fixed top-0 left-0 h-screen w-64 sidebar-themed border-r z-[50] shadow-2xl flex flex-col"
+            className="lg:hidden fixed top-0 left-0 h-screen w-64 sidebar-themed border-r z-[49] shadow-2xl flex flex-col"
           >
             {sidebarContent}
           </motion.aside>
