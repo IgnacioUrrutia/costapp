@@ -35,16 +35,38 @@ const ICON_MAP = {
 const ExpenseItem = ({ expense, delay, onEdit }) => {
   const { deleteExpense } = useExpenses();
   const [showMenu, setShowMenu] = React.useState(false);
+  const [dragX, setDragX] = React.useState(0);
   const Icon = ICON_MAP[expense.category] || ShoppingBag;
 
+  const handleDragEnd = (_, info) => {
+    if (info.offset.x < -80) {
+      deleteExpense(expense.id, expense.receiptUrl);
+    }
+    setDragX(0);
+  };
+
   return (
+    <div className="relative overflow-hidden rounded-[1.5rem]">
+      {/* Delete hint — revealed on swipe left */}
+      <div
+        className="absolute inset-y-0 right-0 w-20 bg-rose-500 flex items-center justify-center rounded-r-[1.5rem] pointer-events-none"
+        style={{ opacity: Math.min(Math.abs(dragX) / 80, 1) }}
+      >
+        <Trash2 size={20} className="text-white" strokeWidth={2.5} />
+      </div>
+
     <motion.div
       layout
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4, delay }}
-      className="bg-white dark:bg-slate-900 p-5 rounded-[1.5rem] border border-slate-100 dark:border-slate-800/50 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group flex items-center gap-4"
+      drag="x"
+      dragConstraints={{ left: -100, right: 0 }}
+      dragElastic={0.05}
+      onDrag={(_, info) => setDragX(info.offset.x)}
+      onDragEnd={handleDragEnd}
+      className="bg-white dark:bg-slate-900 p-5 rounded-[1.5rem] border border-slate-100 dark:border-slate-800/50 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group flex items-center gap-4 cursor-grab active:cursor-grabbing"
     >
       <div className={`p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0 group-hover:scale-110 transition-transform duration-300`}>
         <Icon size={24} strokeWidth={2.5} />
@@ -100,22 +122,23 @@ const ExpenseItem = ({ expense, delay, onEdit }) => {
           <AnimatePresence>
             {showMenu && (
               <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setShowMenu(false)} 
+                <div
+                  className="fixed inset-0 z-10"
+                  onPointerDown={() => setShowMenu(false)}
                 />
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: 10 }}
                   className="absolute right-0 mt-2 w-36 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-xl z-20 overflow-hidden"
+                  onPointerDown={e => e.stopPropagation()}
                 >
                   <button
                     onClick={() => {
                       onEdit?.(expense);
                       setShowMenu(false);
                     }}
-                    className="w-full px-4 py-3 text-left text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2 transition-colors"
+                    className="w-full px-4 py-3 text-left text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2 transition-colors touch-manipulation"
                   >
                     <Edit2 size={14} className="text-indigo-500" />
                     Editar
@@ -125,7 +148,7 @@ const ExpenseItem = ({ expense, delay, onEdit }) => {
                       deleteExpense(expense.id, expense.receiptUrl);
                       setShowMenu(false);
                     }}
-                    className="w-full px-4 py-3 text-left text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2 transition-colors"
+                    className="w-full px-4 py-3 text-left text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2 transition-colors touch-manipulation"
                   >
                     <Trash2 size={14} />
                     Eliminar
@@ -137,6 +160,7 @@ const ExpenseItem = ({ expense, delay, onEdit }) => {
         </div>
       </div>
     </motion.div>
+    </div>
   );
 };
 

@@ -12,7 +12,7 @@ const Modal = ({ isOpen, onClose, children, title }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onPointerDown={onClose}
             className="absolute inset-0 bg-slate-950/60 backdrop-blur-md"
           />
 
@@ -23,6 +23,7 @@ const Modal = ({ isOpen, onClose, children, title }) => {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-indigo-500/10 border border-slate-100 dark:border-slate-800/50 overflow-hidden"
+            onPointerDown={e => e.stopPropagation()}
           >
             <div className="p-8">
               <div className="flex items-center justify-between mb-8">
