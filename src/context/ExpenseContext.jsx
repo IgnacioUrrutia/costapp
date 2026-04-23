@@ -738,6 +738,30 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
+  const shareBudgets = async () => {
+    if (!user) return null;
+    try {
+      const now = new Date();
+      const reportId = `${user.uid}_budgets_${Date.now()}`;
+      await setDoc(doc(db, 'public_reports', reportId), {
+        type: 'budget',
+        userId: user.uid,
+        userName: user.displayName,
+        month: now.getMonth(),
+        year: now.getFullYear(),
+        salary,
+        budgets,
+        categoryTotals,
+        sharedAt: serverTimestamp(),
+      });
+      return `${window.location.origin}/share/${reportId}`;
+    } catch (e) {
+      console.error('Error sharing budgets:', e);
+      toast.error('Error al generar link');
+      return null;
+    }
+  };
+
   // ── Presupuestos Sugeridos (Inteligencia) ──────────────────────────────────
   const suggestedBudgets = useMemo(() => {
     const historical = {};
@@ -829,7 +853,7 @@ export const ExpenseProvider = ({ children }) => {
       currency, setCurrency, exchangeRate, setExchangeRate, suggestedBudgets,
       upcomingDueDebt, financialHealth, weeklySpendingData,
       financialScore, balanceProjection,
-      shareMonth,
+      shareMonth, shareBudgets,
       splitPersons, addSplitPerson, deleteSplitPerson,
       splitExpenses, addSplitExpense, deleteSplitExpense, settleSplitExpense, settleAllWithPerson,
     }}>

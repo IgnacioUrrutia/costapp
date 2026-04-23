@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, CreditCard, PiggyBank, X, Upload, MoreVertical, Edit2,
   Home, Utensils, Truck, HeartPulse, Play, GraduationCap,
-  ShoppingBag, Trash2, Calendar, Search,
+  ShoppingBag, Trash2, Calendar, Search, FileDown,
 } from 'lucide-react';
 import { useExpenses } from '../context/ExpenseContext';
 import ExpenseFilters from '../components/Expenses/ExpenseFilters';
@@ -11,6 +11,7 @@ import ExpenseForm from '../components/Expenses/ExpenseForm';
 import ImportTool from '../components/Expenses/ImportTool';
 import Modal from '../components/UI/Modal';
 import { Image as ImageIcon } from 'lucide-react';
+import { exportToPDF } from '../utils/pdfExport';
 
 const ICON_MAP = {
   'Alimentación': Utensils, 'Vivienda': Home,   'Transporte': Truck,
@@ -142,7 +143,7 @@ const ExpenseRow = ({ expense, onEdit }) => {
 
 // ── Page ──────────────────────────────────────────────────
 const Movimientos = () => {
-  const { filteredExpenses, salary, currentMonthTotal } = useExpenses();
+  const { filteredExpenses, salary, currentMonthTotal, budgets } = useExpenses();
   const [search, setSearch]           = useState('');
   const [editExpense, setEditExpense] = useState(null);
   const [showImport, setShowImport]   = useState(false);
@@ -154,6 +155,14 @@ const Movimientos = () => {
       (exp) => (exp.description || '').toLowerCase().includes(q) || exp.category.toLowerCase().includes(q)
     );
   }, [filteredExpenses, search]);
+
+  const displayedCategoryTotals = useMemo(() => {
+    const t = {};
+    displayed.forEach(e => { t[e.category] = (t[e.category] || 0) + e.amount; });
+    return t;
+  }, [displayed]);
+
+  const handleExportPDF = () => exportToPDF(displayed, salary, budgets, displayedCategoryTotals);
 
   const totalDisplayed    = displayed.reduce((acc, exp) => acc + exp.amount, 0);
   const installmentExp    = displayed.filter((exp) => exp.isInstallment);
@@ -168,6 +177,9 @@ const Movimientos = () => {
           <p className="pg-subtitle">Historial completo de tus gastos.</p>
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button onClick={handleExportPDF} className="mov-import-btn">
+            <FileDown size={16} className="text-indigo-500" /> Exportar PDF
+          </button>
           <button onClick={() => setShowImport(!showImport)} className="mov-import-btn">
             <Upload size={16} className="text-indigo-500" /> Importar
           </button>

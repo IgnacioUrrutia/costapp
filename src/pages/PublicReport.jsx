@@ -3,10 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { motion } from 'framer-motion';
-import { 
-  TrendingUp, Calendar, ShoppingBag, 
+import {
+  TrendingUp, ShoppingBag,
   ArrowLeft, Wallet, ShieldCheck, HeartPulse,
-  Home, Utensils, Truck, Play, GraduationCap, User, CreditCard, PiggyBank
+  Home, Utensils, Truck, Play, GraduationCap, User, CreditCard, PiggyBank,
+  Target,
 } from 'lucide-react';
 
 const ICON_MAP = {
@@ -19,6 +20,85 @@ const MONTH_NAMES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ];
+
+const fmt = v => Number(v || 0).toLocaleString('es-CL');
+
+const BudgetReport = ({ report }) => {
+  const categories = Object.entries(report.budgets || {}).filter(([, b]) => b > 0);
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 pb-12 font-sans selection:bg-indigo-500/30">
+      <div className="max-w-lg mx-auto space-y-8">
+        <div className="flex items-center justify-between">
+          <Link to="/" className="p-2 border border-slate-800 rounded-xl hover:bg-slate-900 transition-all">
+            <ArrowLeft size={20} className="text-slate-400" />
+          </Link>
+          <div className="flex items-center gap-2 px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20">
+            <Target size={14} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Loud Budgeting</span>
+          </div>
+        </div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-2">
+          <p className="text-indigo-400 font-black uppercase tracking-[0.3em] text-xs">Límites de gasto</p>
+          <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-slate-500">
+            {MONTH_NAMES[report.month]} {report.year}
+          </h1>
+          <p className="text-slate-400 font-bold">Por {report.userName || 'Usuario de CostApp'}</p>
+        </motion.div>
+
+        <div className="space-y-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Presupuesto por categoría</p>
+          {categories.map(([cat, budget], i) => {
+            const Icon = ICON_MAP[cat] || ShoppingBag;
+            const spent = (report.categoryTotals || {})[cat] || 0;
+            const pct = Math.min((spent / budget) * 100, 100);
+            const isOver = spent > budget;
+            const isWarn = !isOver && pct >= 80;
+            return (
+              <motion.div
+                key={cat}
+                initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 + i * 0.05 }}
+                className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2.5 bg-slate-800 text-slate-400 rounded-xl shrink-0">
+                    <Icon size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-black text-sm text-white">{cat}</span>
+                      <span className={`text-xs font-black tabular-nums ${isOver ? 'text-rose-400' : isWarn ? 'text-amber-400' : 'text-slate-400'}`}>
+                        ${fmt(spent)} / ${fmt(budget)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${isOver ? 'bg-rose-500' : isWarn ? 'bg-amber-400' : 'bg-indigo-500'}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5 text-[10px] font-bold text-slate-600">
+                  <span>{pct.toFixed(0)}% usado</span>
+                  {isOver
+                    ? <span className="text-rose-500">Excedido en ${fmt(spent - budget)}</span>
+                    : <span>${fmt(budget - spent)} disponible</span>
+                  }
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        <div className="pt-8 text-center space-y-3">
+          <p className="text-slate-500 text-xs italic">"Gastar con propósito es la base de la libertad financiera."</p>
+          <span className="text-lg font-black tracking-tighter text-indigo-500">CostApp</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PublicReport = () => {
   const { id } = useParams();
@@ -44,6 +124,8 @@ const PublicReport = () => {
       <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full" />
     </div>
   );
+
+  if (report?.type === 'budget') return <BudgetReport report={report} />;
 
   if (!report) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 p-6 text-center">
